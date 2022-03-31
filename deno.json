@@ -1,0 +1,10 @@
+{
+    "fmt": {
+        "files": {
+            "include": ["."]
+        },
+        "options": {
+            "indentWidth": 4
+        }
+    }
+}

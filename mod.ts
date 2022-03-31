@@ -19,7 +19,7 @@ await new Command<Options, Arguments, GlobalOptions>()
     .option<{ output: string }>(
         "-o, --output [input:string]",
         "Path to the output file",
-        { required: true }
+        { required: true },
     )
     .action(async ({ output }, input) => {
         const inputPath = path.resolve(input);
