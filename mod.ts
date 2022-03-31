@@ -1,4 +1,5 @@
-import { Command } from "./deps.ts";
+import { Command, path } from "./deps.ts";
+import { JupyterNotebook, loadNotebook } from "./notebook.ts";
 
 type Arguments = [input: string];
 
@@ -20,7 +21,16 @@ await new Command<Options, Arguments, GlobalOptions>()
         "Path to the output file",
         { required: true }
     )
-    .action(({ output }, input) => {
-        console.log(`Converting ${input} to ${output}`);
+    .action(async ({ output }, input) => {
+        const inputPath = path.resolve(input);
+        const outputPath = path.resolve(output);
+        let notebook: JupyterNotebook;
+        try {
+            notebook = await loadNotebook(inputPath);
+        } catch (error) {
+            console.error(error.message);
+            Deno.exit(1);
+        }
+        console.log(`Converting ${inputPath} to ${outputPath}`);
     })
     .parse(Deno.args);
