@@ -1,9 +1,14 @@
 import { Command, path } from "./deps.ts";
-import { convertNotebook, JupyterNotebook, loadNotebook } from "./notebook.ts";
+import {
+    convertNotebook,
+    ConvertOptions,
+    JupyterNotebook,
+    loadNotebook,
+} from "./notebook.ts";
 
 type Arguments = [input: string];
 
-interface Options {
+interface Options extends ConvertOptions {
     output: string;
 }
 
@@ -21,7 +26,13 @@ await new Command<Options, Arguments, GlobalOptions>()
         "Path to the output file",
         { required: true },
     )
-    .action(async ({ output }, input) => {
+    .option("--skip-output [skipOutput:boolean]", "Skip code cell output", {
+        default: false,
+    })
+    .option("--image-dir [imageDir:string]", "Path to the image directory", {
+        default: "images",
+    })
+    .action(async ({ output, skipOutput, imageDir }, input) => {
         const inputPath = path.resolve(input);
         const outputPath = path.resolve(output);
         let notebook: JupyterNotebook;
@@ -32,7 +43,6 @@ await new Command<Options, Arguments, GlobalOptions>()
             Deno.exit(1);
         }
         console.log(`Converting ${inputPath} to ${outputPath}`);
-        const markdown = convertNotebook(notebook);
-        await Deno.writeTextFile(outputPath, markdown);
+        await convertNotebook(notebook, outputPath, { skipOutput, imageDir });
     })
     .parse(Deno.args);
