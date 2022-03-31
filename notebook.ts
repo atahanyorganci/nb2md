@@ -102,3 +102,27 @@ export async function loadNotebook(filePath: string): Promise<JupyterNotebook> {
     const json = JSON.parse(text);
     return json;
 }
+
+function cellToBlock(cell: JupyterCell): string {
+    return cell.source.map((line) => line.replace(/\s+$/, "")).join("\n");
+}
+
+export function convertNotebook(notebook: JupyterNotebook): string {
+    const language = notebook.metadata.language_info.name;
+    const blocks = notebook.cells.map((cell) => {
+        const cellType = cell.cell_type;
+        switch (cellType) {
+            case "markdown":
+                return cellToBlock(cell);
+            case "code": {
+                const source = cellToBlock(cell);
+                return `\`\`\`${language}\n${source}\n\`\`\``;
+            }
+            case "raw":
+                return cellToBlock(cell);
+            default:
+                throw new Error(`Unknown cell type: ${cellType}`);
+        }
+    });
+    return blocks.join("\n\n");
+}

@@ -1,5 +1,5 @@
 import { Command, path } from "./deps.ts";
-import { JupyterNotebook, loadNotebook } from "./notebook.ts";
+import { convertNotebook, JupyterNotebook, loadNotebook } from "./notebook.ts";
 
 type Arguments = [input: string];
 
@@ -32,5 +32,7 @@ await new Command<Options, Arguments, GlobalOptions>()
             Deno.exit(1);
         }
         console.log(`Converting ${inputPath} to ${outputPath}`);
+        const markdown = convertNotebook(notebook);
+        await Deno.writeTextFile(outputPath, markdown);
     })
     .parse(Deno.args);
