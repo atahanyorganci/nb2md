@@ -3,3 +3,7 @@
 coverage/
 cov/
 lcov/
+
+# Taskfile and build dir
+.task/
+dist

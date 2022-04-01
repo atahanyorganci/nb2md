@@ -1,0 +1,28 @@
+version: '3'
+
+vars:
+  DIST_DIR: dist
+  BUNDLE: "{{.DIST_DIR}}/bundle.js"
+
+tasks:
+  fmt:
+    sources:
+      - "./**/*.ts"
+      - "./*.ts"
+    cmds:
+      - deno fmt
+    preconditions:
+      - sh: "! deno fmt --check"
+        msg: "All files are properly formatted"
+  build:
+    sources:
+      - "./**/*.ts"
+      - "./*.ts"
+    generates:
+      - "{{.BUNDLE}}"
+    cmds:
+      - mkdir -p {{.DIST_DIR}}
+      - deno bundle mod.ts {{.BUNDLE}}
+  install:
+    cmds:
+      - deno install -f --allow-read --allow-write mod.ts
