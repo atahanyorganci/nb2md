@@ -1,4 +1,5 @@
 import { base64, crypto, path } from "./deps.ts";
+import { tryParseHTML } from "./parse_html.ts";
 
 export interface JupyterNotebook {
     cells: JupyterCell[];
@@ -71,6 +72,7 @@ export interface ExecuteResult {
     output_type: "execute_result";
     data: {
         "text/plain"?: string[];
+        "text/html"?: string[];
         "image/png"?: string;
         "application/json"?: {
             json: string;
@@ -124,9 +126,9 @@ function cellToBlock(cell: JupyterCell): string {
 
 const TICKS = "```";
 
-async function convertExecuteResult(
-    { data }: ExecuteResult,
-): Promise<ConvertedOutput> {
+async function convertExecuteResult({
+    data,
+}: ExecuteResult): Promise<ConvertedOutput> {
     if (data["image/png"]) {
         const image = base64.decode(data["image/png"]);
         const imageHash = await crypto.subtle.digest("SHA-1", image);
@@ -143,6 +145,16 @@ async function convertExecuteResult(
         return {
             block,
         };
+    } else if (data["text/html"]) {
+        const html = data["text/html"]
+            .map((line) => line.replace(/\s+$/, ""))
+            .join("\n");
+        try {
+            return tryParseHTML(html);
+        } catch (error) {
+            console.error(error);
+        }
+        return {};
     } else if (data["text/plain"]) {
         const block = data["text/plain"]
             .map((line) => line.replace(/\s+$/, ""))
